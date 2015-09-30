@@ -1,3 +1,4 @@
 pywin32
 paramiko
+progressbar2
 # and hotpy
