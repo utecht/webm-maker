@@ -1,7 +1,9 @@
 import win32gui
-import time
 import os
 import subprocess
+
+import hotkey
+import uploader
 
 
 def cleanup():
@@ -30,27 +32,16 @@ def get_title(hwnd):
     return win32gui.GetWindowText(hwnd)
 
 
-
-def test():
-    print("You have 2 seconds to select the window you wish to record!")
-    input("Press enter to start your 2 second countdown...")
-    time.sleep(2)
-    window = win32gui.GetForegroundWindow()
-    title = get_title(window)
-
-    cleanup()
-    capture_video()
-    encode_video()
-
-    os.system("start .")
-
 PID = None
 
 def start_capture():
     global PID
+
+
     window = win32gui.GetForegroundWindow()
     title = get_title(window)
 
+    cleanup()
     PID = subprocess.Popen('ffmpeg\\ffmpeg.exe -f gdigrab -i title="{}" '
                 '-framerate 15 -vf "scale=\'iw/2\':-1" '
                 '-c:v rawvideo -pix_fmt yuv420p '
@@ -63,14 +54,11 @@ def stop_capture():
     PID.wait()
 
     encode_video()
+    uploader.upload('test-out.webm', 'test.webm')
 
-import hotkey
-cleanup()
+
 
 hotkey.register(start_capture, 'F9')
 hotkey.register(stop_capture, 'F8')
 hotkey.register(lambda: False, 'F9', ['Ctrl'])
 hotkey.listen()
-
-
-
