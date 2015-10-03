@@ -1,6 +1,8 @@
 import paramiko
 import progressbar
 
+import settings
+
 def make_progress_callback():
     bar = None
 
@@ -25,7 +27,9 @@ def upload(source_filename, dest_filename):
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-    client.connect("quasarj.com", username="truckload", password="4hg0sn33k")
+    client.connect(settings.hostname,
+                   username=settings.username,
+                   password=settings.password)
     sftp = client.open_sftp()
 
     # print("Connected, beginning upload...")
@@ -36,4 +40,5 @@ def upload(source_filename, dest_filename):
 
 
 if __name__ == '__main__':
-    upload('nerds.webm', 'nerds.webm')
+    import sys
+    upload(sys.argv[1], sys.argv[1])
