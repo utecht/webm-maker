@@ -1,13 +1,11 @@
 from random import sample
-import json
+from string import ascii_lowercase, ascii_uppercase, digits
 
-
-with open("words.json") as f:
-    words = json.load(f)
+words = ascii_uppercase + ascii_lowercase + digits
 
 
 def get_name():
-    return ''.join(sample(words, 3))
+    return ''.join(sample(words, 7))
 
 
 def main():
