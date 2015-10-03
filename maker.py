@@ -7,6 +7,7 @@ import hotpy
 import uploader
 import namer
 
+VERSION = '1.0'
 
 PID = None
 name = None
@@ -119,7 +120,7 @@ def main():
     hotpy.register(handle_f9, 'F9', ['Alt'])
     hotpy.register(lambda: False, 'F9', ['Ctrl'])  # exit
 
-    print("A Series of Tubes, v0.1")
+    print("A Series of Tubes, v{}".format(VERSION))
     print("A simple webm maker")
 
     print("\nBrought to you by Quasar, Joseph, and The Cult of Done\n")
