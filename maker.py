@@ -1,9 +1,7 @@
 import win32gui
-import win32api
 import os
 import subprocess
 import progressbar
-import signal
 
 import hotpy
 import uploader
@@ -41,6 +39,7 @@ def cleanup():
         os.unlink('test-out.webm')
     except FileNotFoundError:
         pass
+
 
 def encode_video():
     p = subprocess.Popen('ffmpeg\\ffmpeg.exe '
@@ -80,12 +79,12 @@ def start_capture():
 
     print("Capturing has begun. Press F9 again to stop!")
 
+
 def stop_capture():
     global PID
 
-    #PID.terminate()
-    #win32api.TerminateProcess(int(PID._handle), -1)
-    #os.system('TASKKILL /PID {}'.format(PID.pid))
+    # luckily, ffmpeg will accept a q on stdin as an exit command
+    # lucky, becuase it's very hard to send a Ctrl+c to something in windows land
     PID.stdin.write(b'q')
     PID.stdin.flush()
     PID.wait()
@@ -124,27 +123,7 @@ def main():
     print("Press Ctrl+F9 to exit.\n\n")
 
     hotpy.listen()
-def test():
-
-    try:
-        os.unlink('test-out.webm')
-    except:
-        pass
-
-    name = '{}.webm'.format(namer.get_name())
-    url = 'http://i.notabigtruck.com/i/tubes/{}'.format(name)
-
-    print('Your url will be: {}'.format(url))
-
-    encode_video()
-    print('Uploading...')
-    uploader.upload('test-out.webm', name)
-
-def test2():
-
-    start_capture()
 
 
 if __name__ == '__main__':
     main()
-    #test2()
