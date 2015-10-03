@@ -8,6 +8,9 @@ import uploader
 import namer
 
 
+PID = None
+name = None
+
 def feed_file_to_handle_with_progress(filename, handle):
     chunk_size = 1024
     position = 0
@@ -33,24 +36,24 @@ def feed_file_to_handle_with_progress(filename, handle):
 
 
 
-def cleanup():
+def cleanup(name):
     try:
-        os.unlink('test-out2.avi')
-        os.unlink('test-out.webm')
+        os.unlink('{}.avi'.format(name))
+        os.unlink('{}.webm'.format(name))
     except FileNotFoundError:
         pass
 
 
-def encode_video():
+def encode_video(name):
     p = subprocess.Popen('ffmpeg\\ffmpeg.exe '
             '-i - '
             '-c:v libvpx -b:v 10000k '
-            'test-out.webm',
+            '{}.webm'.format(name),
             bufsize=64,
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         stdin=subprocess.PIPE)
     print("Encoding...")
-    feed_file_to_handle_with_progress('test-out2.avi', p.stdin)
+    feed_file_to_handle_with_progress('{}.avi'.format(name), p.stdin)
     p.wait()
 
 
@@ -58,30 +61,28 @@ def get_title(hwnd):
     return win32gui.GetWindowText(hwnd)
 
 
-PID = None
-
 def start_capture():
     global PID
-
+    global name
 
     window = win32gui.GetForegroundWindow()
     title = get_title(window)
 
-    cleanup()
-    print("cleanup finished, calling subprocess")
+    name = namer.get_name()
+
     PID = subprocess.Popen('ffmpeg\\ffmpeg.exe -f gdigrab -i title="{}" '
                 '-framerate 15 -vf "scale=\'iw/2\':-1" '
                 '-c:v rawvideo -pix_fmt yuv420p '
-                'test-out2.avi'.format(title),
+                '{}.avi'.format(title, name),
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         stdin=subprocess.PIPE)
-    # out, err = PID.communicate()
 
-    print("Capturing has begun. Press F9 again to stop!")
+    print("\nCapturing has begun. Press Alt+F9 again to stop!\n")
 
 
 def stop_capture():
     global PID
+    global name
 
     # luckily, ffmpeg will accept a q on stdin as an exit command
     # lucky, becuase it's very hard to send a Ctrl+c to something in windows land
@@ -90,14 +91,16 @@ def stop_capture():
     PID.wait()
     PID = None
 
-    name = '{}.webm'.format(namer.get_name())
-    url = 'http://i.notabigtruck.com/i/tubes/{}'.format(name)
+    full_name = '{}.webm'.format(name)
+    url = 'http://i.notabigtruck.com/i/tubes/{}'.format(full_name)
 
     print('Your url will be: {}'.format(url))
 
-    encode_video()
+    encode_video(name)
     print('Uploading...')
-    uploader.upload('test-out.webm', name)
+    uploader.upload(full_name, full_name)
+
+    cleanup(name)
 
     print('\n\n{}\n\n'.format(url))
     os.system('start {}'.format(url))
@@ -117,7 +120,9 @@ def main():
     hotpy.register(lambda: False, 'F9', ['Ctrl'])  # exit
 
     print("A Series of Tubes, v0.1")
-    print("A simple webm maker, by Quasar\n")
+    print("A simple webm maker")
+
+    print("\nBrought to you by Quasar, Joseph, and The Cult of Done\n")
 
     print("Press Alt+F9 to start recording!")
     print("Press Ctrl+F9 to exit.\n\n")
